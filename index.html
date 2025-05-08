@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>ESP32 BLE - Hello World</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 50px; }
+    button { font-size: 16px; padding: 10px 20px; }
+    #output { margin-top: 20px; font-size: 20px; color: green; }
+  </style>
+</head>
+<body>
+  <h1>Conectar ao ESP32 via Bluetooth</h1>
+  <button onclick="connectBLE()">Conectar</button>
+  <div id="output">Status: Desconectado</div>
+
+  <script>
+    const serviceUUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+    const characteristicUUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+
+    async function connectBLE() {
+      try {
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: "ESP32" }],
+          optionalServices: [serviceUUID]
+        });
+
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService(serviceUUID);
+        const characteristic = await service.getCharacteristic(characteristicUUID);
+
+        document.getElementById("output").innerText = "Conectado ao ESP32! Aguardando dados...";
+
+        characteristic.startNotifications();
+        characteristic.addEventListener("characteristicvaluechanged", (event) => {
+          const value = new TextDecoder().decode(event.target.value);
+          document.getElementById("output").innerText = "Recebido: " + value;
+        });
+      } catch (error) {
+        document.getElementById("output").innerText = "Erro: " + error;
+      }
+    }
+  </script>
+</body>
+</html>
