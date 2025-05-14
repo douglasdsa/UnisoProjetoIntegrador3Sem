@@ -13,12 +13,16 @@
   <h1>Conectar ao ESP32 via Bluetooth</h1>
   <button onclick="connectBLE()">Conectar</button>
   <div id="output">Status: Desconectado</div>
-
   <script>
     const serviceUUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
     const characteristicUUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
 
     async function connectBLE() {
+      if (!navigator.bluetooth) {
+        document.getElementById("output").innerText = "Web Bluetooth não suportado neste navegador.";
+        return;
+      }
+      
       try {
         const device = await navigator.bluetooth.requestDevice({
           filters: [{ namePrefix: "ESP32" }],
@@ -30,7 +34,6 @@
         const characteristic = await service.getCharacteristic(characteristicUUID);
 
         document.getElementById("output").innerText = "Conectado ao ESP32! Aguardando dados...";
-
         characteristic.startNotifications();
         characteristic.addEventListener("characteristicvaluechanged", (event) => {
           const value = new TextDecoder().decode(event.target.value);
