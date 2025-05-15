@@ -2,40 +2,88 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>BLE Teste</title>
+  <title>MedAlert</title>
 	
   <link rel="stylesheet" type="text/css" href="styles.css" media="screen" />
 </head>
 <body>
-  <h2>Conectar ao ESP32</h2>
-  <button onclick="conectar()">Conectar</button>
-  <p id="status">Status: aguardando...</p>
+  <!-- Tela inicial: botão para conectar -->
+<div id="conectarSection" class="active">
+  <h1>Conectar ao ESP32 via Bluetooth</h1>
+  <p id="status">Clique no botão para conectar ao dispositivo Bluetooth.</p>
+  <button id="btnConectar">Conectar</button>
+</div>
 
-  <script>
-    async function conectar() {
-      try {
-        const device = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: 'ESP32' }],
-          optionalServices: ['4fafc201-1fb5-459e-8fcc-c5c9c331914b']
-        });
+<!-- Tela progCaixa: mostra após conexão -->
+<div id="progCaixa">
+  <h1>Caixa de Remédios Conectada</h1>
+  <p id="statusProg">Conectado ao dispositivo BLE.</p>
+  <div id="dataHora">--/--/---- --:--:--</div>
+  <button id="btnDesconectar" style="margin-top:20px;">Desconectar</button>
+</div>
 
-        document.getElementById("status").innerText = "Dispositivo selecionado: " + device.name;
+<script>
+  let device;
 
-        device.addEventListener("gattserverdisconnected", () => {
-          document.getElementById("status").innerText = "Desconectado. Retornando à index.html";
-          window.location.href = "index.html";
-        });
+  // Função para mostrar data e hora local atualizada a cada segundo
+  function atualizarDataHora() {
+    const agora = new Date();
+    const dia = String(agora.getDate()).padStart(2, '0');
+    const mes = String(agora.getMonth() + 1).padStart(2, '0');
+    const ano = agora.getFullYear();
+    const horas = String(agora.getHours()).padStart(2, '0');
+    const minutos = String(agora.getMinutes()).padStart(2, '0');
+    const segundos = String(agora.getSeconds()).padStart(2, '0');
+    document.getElementById('dataHora').innerText = `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
+  }
 
-        const server = await device.gatt.connect();
-        document.getElementById("status").innerText = "Conectado com sucesso. Redirecionando...";
-        setTimeout(() => {
-          window.location.href = "progCaixa.html";
-        }, 1000);
+  setInterval(atualizarDataHora, 1000);
+  atualizarDataHora();
 
-      } catch (error) {
-        document.getElementById("status").innerText = "Erro: " + error;
-      }
+  // Mostra uma "tela" e oculta outra
+  function mostrarTela(telaId) {
+    document.getElementById('conectarSection').classList.remove('active');
+    document.getElementById('progCaixa').classList.remove('active');
+    document.getElementById(telaId).classList.add('active');
+  }
+
+  // Inicia mostrando tela de conexão
+  mostrarTela('conectarSection');
+
+  // Botão conectar
+  document.getElementById('btnConectar').addEventListener('click', async () => {
+    try {
+      const options = {
+        filters: [{ namePrefix: 'ESP32' }],
+        optionalServices: ['4fafc201-1fb5-459e-8fcc-c5c9c331914b']
+      };
+
+      device = await navigator.bluetooth.requestDevice(options);
+
+      device.addEventListener('gattserverdisconnected', () => {
+        alert('Dispositivo desconectado! Voltando para a tela inicial.');
+        mostrarTela('conectarSection');
+      });
+
+      const server = await device.gatt.connect();
+
+      document.getElementById('statusProg').innerText = `Conectado ao dispositivo BLE: ${device.name}`;
+
+      mostrarTela('progCaixa');
+
+    } catch (error) {
+      document.getElementById('status').innerText = `Erro ao conectar: ${error}`;
     }
-  </script>
+  });
+
+  // Botão desconectar
+  document.getElementById('btnDesconectar').addEventListener('click', async () => {
+    if (device && device.gatt.connected) {
+      await device.gatt.disconnect();
+      mostrarTela('conectarSection');
+      document.getElementById('status').innerText = 'Desconectado manualmente.';
+    }
+  });
+</script>
 </body>
 </html>
