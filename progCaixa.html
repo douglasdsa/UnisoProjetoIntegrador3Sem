@@ -1,1 +1,35 @@
-s
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Caixa de Remédios</title>
+	
+  <link rel="stylesheet" type="text/css" href="styles.css" media="screen" />
+</head>
+<body>
+  <h1>Caixa de Remédios Conectada</h1>
+  <p id="status">Dispositivo Bluetooth conectado</p>
+  <div id="dataHora">--/--/---- --:--:--</div>
+
+  <script>
+    function atualizarDataHora() {
+      const agora = new Date();
+      const dia = agora.getDate().toString().padStart(2, '0');
+      const mes = (agora.getMonth() + 1).toString().padStart(2, '0');
+      const ano = agora.getFullYear();
+      const horas = agora.getHours().toString().padStart(2, '0');
+      const minutos = agora.getMinutes().toString().padStart(2, '0');
+      const segundos = agora.getSeconds().toString().padStart(2, '0');
+
+      const dataHoraFormatada = `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
+      document.getElementById("dataHora").innerText = dataHoraFormatada;
+    }
+
+    // Atualiza a cada segundo
+    setInterval(atualizarDataHora, 1000);
+
+    // Atualiza imediatamente ao carregar
+    atualizarDataHora();
+  </script>
+</body>
+</html>

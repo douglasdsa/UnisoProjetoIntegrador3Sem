@@ -1,3 +1,4 @@
 body { font-family: Arial; text-align: center; margin-top: 50px; }
     button { font-size: 16px; padding: 10px 20px; }
     #output { margin-top: 20px; font-size: 20px; color: green; }
+#dataHora { font-size: 24px; color: #333; margin-top: 20px; }
