@@ -2,36 +2,42 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>BLE Teste</title>
+  <title>ESP32 BLE - Hello World</title>
+  <style>
+    body { font-family: Arial; text-align: center; margin-top: 50px; }
+    button { font-size: 16px; padding: 10px 20px; }
+    #output { margin-top: 20px; font-size: 20px; color: green; }
+  </style>
 </head>
 <body>
-  <h2>Conectar ao ESP32</h2>
-  <button onclick="conectar()">Conectar</button>
-  <p id="status">Status: aguardando...</p>
+  <h1>Conectar ao ESP32 via Bluetooth</h1>
+  <button onclick="connectBLE()">Conectar</button>
+  <div id="output">Status: Desconectado</div>
 
   <script>
-    async function conectar() {
+    const serviceUUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+    const characteristicUUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+
+    async function connectBLE() {
       try {
         const device = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: 'ESP32' }],
-          optionalServices: ['4fafc201-1fb5-459e-8fcc-c5c9c331914b']
-        });
-
-        document.getElementById("status").innerText = "Dispositivo selecionado: " + device.name;
-
-        device.addEventListener("gattserverdisconnected", () => {
-          document.getElementById("status").innerText = "Desconectado. Retornando à index.html";
-          window.location.href = "index.html";
+          filters: [{ namePrefix: "ESP32" }],
+          optionalServices: [serviceUUID]
         });
 
         const server = await device.gatt.connect();
-        document.getElementById("status").innerText = "Conectado com sucesso. Redirecionando...";
-        setTimeout(() => {
-          window.location.href = "progCaixa.html";
-        }, 1000);
+        const service = await server.getPrimaryService(serviceUUID);
+        const characteristic = await service.getCharacteristic(characteristicUUID);
 
+        document.getElementById("output").innerText = "Conectado ao ESP32! Aguardando dados...";
+
+        characteristic.startNotifications();
+        characteristic.addEventListener("characteristicvaluechanged", (event) => {
+          const value = new TextDecoder().decode(event.target.value);
+          document.getElementById("output").innerText = "Recebido: " + value;
+        });
       } catch (error) {
-        document.getElementById("status").innerText = "Erro: " + error;
+        document.getElementById("output").innerText = "Erro: " + error;
       }
     }
   </script>
