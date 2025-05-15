@@ -2,49 +2,38 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Conectar ao ESP32</title>
-  <style>
-    body { font-family: Arial; text-align: center; margin-top: 50px; }
-    button { font-size: 16px; padding: 10px 20px; }
-    #status { margin-top: 20px; font-size: 20px; color: green; }
-  </style>
+  <title>BLE Teste</title>
 </head>
 <body>
-  <h1>Conectar ao ESP32 via Bluetooth</h1>
-  <button onclick="connectBLE()">Conectar</button>
-  <div id="status">Status: Aguardando conexão...</div>
+  <h2>Conectar ao ESP32</h2>
+  <button onclick="conectar()">Conectar</button>
+  <p id="status">Status: aguardando...</p>
 
   <script>
-    const serviceUUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
-    const characteristicUUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
-    let device;
-
-    async function connectBLE() {
+    async function conectar() {
       try {
-        device = await navigator.bluetooth.requestDevice({
-          filters: [{ namePrefix: "ESP32" }],
-          optionalServices: [serviceUUID]
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: 'ESP32' }],
+          optionalServices: ['4fafc201-1fb5-459e-8fcc-c5c9c331914b']
         });
 
-        device.addEventListener('gattserverdisconnected', onDisconnected);
+        document.getElementById("status").innerText = "Dispositivo selecionado: " + device.name;
+
+        device.addEventListener("gattserverdisconnected", () => {
+          document.getElementById("status").innerText = "Desconectado. Retornando à index.html";
+          window.location.href = "index.html";
+        });
 
         const server = await device.gatt.connect();
-        const service = await server.getPrimaryService(serviceUUID);
-        const characteristic = await service.getCharacteristic(characteristicUUID);
-
-        document.getElementById("status").innerText = "Conectado! Redirecionando...";
-
-        // Redireciona para progCaixa.html após conexão
+        document.getElementById("status").innerText = "Conectado com sucesso. Redirecionando...";
         setTimeout(() => {
           window.location.href = "progCaixa.html";
         }, 1000);
 
       } catch (error) {
         document.getElementById("status").innerText = "Erro: " + error;
-        console.error(error);
       }
     }
-
-    function onDisconnected(event) {
-      console.log("Dispositivo desconectado.");
-      // Red
+  </script>
+</body>
+</html>
