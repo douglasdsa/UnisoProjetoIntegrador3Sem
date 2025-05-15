@@ -12,6 +12,10 @@
   <div id="dataHora">--/--/---- --:--:--</div>
 
   <script>
+    // Variável global para o dispositivo
+    let device;
+
+    // Atualizar relógio local
     function atualizarDataHora() {
       const agora = new Date();
       const dia = agora.getDate().toString().padStart(2, '0');
@@ -25,18 +29,38 @@
       document.getElementById("dataHora").innerText = dataHoraFormatada;
     }
 
-    // Atualiza a cada segundo
+    // Atualiza relógio a cada segundo
     setInterval(atualizarDataHora, 1000);
-
-    // Atualiza imediatamente ao carregar
     atualizarDataHora();
 
-    device.addEventListener("gattserverdisconnected", () => {
-    document.getElementById("status").innerText = "Dispositivo desconectado. Redirecionando...";
-    setTimeout(() => {
-    window.location.href = "index.html";
-    }, 1500);
-    });
+    // Conexão com o ESP32 via BLE
+    async function conectarDispositivo() {
+      try {
+        const options = {
+          filters: [{ namePrefix: "ESP32" }],
+          optionalServices: ["4fafc201-1fb5-459e-8fcc-c5c9c331914b"]
+        };
+
+        device = await navigator.bluetooth.requestDevice(options);
+
+        // Listener de desconexão
+        device.addEventListener("gattserverdisconnected", () => {
+          document.getElementById("status").innerText = "Dispositivo desconectado. Redirecionando...";
+          setTimeout(() => {
+            window.location.href = "index.html";
+          }, 1500);
+        });
+
+        const server = await device.gatt.connect();
+        document.getElementById("status").innerText = "Conectado ao dispositivo BLE.";
+
+      } catch (erro) {
+        document.getElementById("status").innerText = "Erro ao conectar: " + erro;
+      }
+    }
+
+    // Conectar automaticamente ao carregar a página
+    conectarDispositivo();
   </script>
 </body>
 </html>
