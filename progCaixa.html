@@ -12,10 +12,9 @@
   <div id="dataHora">--/--/---- --:--:--</div>
 
   <script>
-    // Variável global para o dispositivo
     let device;
 
-    // Atualizar relógio local
+    // Verifica data/hora local
     function atualizarDataHora() {
       const agora = new Date();
       const dia = agora.getDate().toString().padStart(2, '0');
@@ -24,43 +23,39 @@
       const horas = agora.getHours().toString().padStart(2, '0');
       const minutos = agora.getMinutes().toString().padStart(2, '0');
       const segundos = agora.getSeconds().toString().padStart(2, '0');
-
       const dataHoraFormatada = `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
       document.getElementById("dataHora").innerText = dataHoraFormatada;
     }
 
-    // Atualiza relógio a cada segundo
     setInterval(atualizarDataHora, 1000);
     atualizarDataHora();
 
-    // Conexão com o ESP32 via BLE
-    async function conectarDispositivo() {
-      try {
-        const options = {
-          filters: [{ namePrefix: "ESP32" }],
-          optionalServices: ["4fafc201-1fb5-459e-8fcc-c5c9c331914b"]
-        };
+    // Captura o dispositivo BLE já conectado
+    navigator.bluetooth.getDevices().then(devices => {
+      if (devices.length > 0) {
+        device = devices[0]; // Pega o primeiro conectado
+        monitorarConexao();
+      } else {
+        document.getElementById("status").innerText = "Nenhum dispositivo conectado. Redirecionando...";
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1500);
+      }
+    }).catch(err => {
+      document.getElementById("status").innerText = "Erro ao buscar dispositivo: " + err;
+    });
 
-        device = await navigator.bluetooth.requestDevice(options);
-
-        // Listener de desconexão
-        device.addEventListener("gattserverdisconnected", () => {
-          document.getElementById("status").innerText = "Dispositivo desconectado. Redirecionando...";
+    // ⏱ Verifica se o dispositivo ainda está conectado
+    function monitorarConexao() {
+      setInterval(() => {
+        if (!device.gatt.connected) {
+          document.getElementById("status").innerText = "BLE desconectado. Redirecionando...";
           setTimeout(() => {
             window.location.href = "index.html";
-          }, 1500);
-        });
-
-        const server = await device.gatt.connect();
-        document.getElementById("status").innerText = "Conectado ao dispositivo BLE.";
-
-      } catch (erro) {
-        document.getElementById("status").innerText = "Erro ao conectar: " + erro;
-      }
+          }, 1000);
+        }
+      }, 3000); // Verifica a cada 3 segundos
     }
-
-    // Conectar automaticamente ao carregar a página
-    conectarDispositivo();
   </script>
 </body>
 </html>
