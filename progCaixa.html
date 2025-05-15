@@ -45,7 +45,7 @@
       document.getElementById("status").innerText = "Erro ao buscar dispositivo: " + err;
     });
 
-    // ⏱ Verifica se o dispositivo ainda está conectado
+    // Verifica se o dispositivo ainda está conectado
     function monitorarConexao() {
       setInterval(() => {
         if (!device.gatt.connected) {
