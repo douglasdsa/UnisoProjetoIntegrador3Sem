@@ -1,73 +1,86 @@
+
 #include <BLEDevice.h>
-#include <BLEUtils.h>
 #include <BLEServer.h>
+#include <BLEUtils.h>
 #include <BLE2902.h>
 
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
 
-BLECharacteristic *pCharacteristic;
+BLECharacteristic* pCharacteristic;
 bool deviceConnected = false;
-unsigned long lastConnectionTime = 0;
-const unsigned long advertisingTimeout = 30000; // Tempo em milissegundos antes de reiniciar o anúncio
+unsigned long tempoIntervalo = 0;
+unsigned long proximoAlvo = 0;
+int ledIndex = 0;
+
+const int ledPins[] = {1, 39, 0, 21, 4, 17, 10};
+const int numLeds = sizeof(ledPins) / sizeof(ledPins[0]);
+
+class MyCallbacks : public BLECharacteristicCallbacks {
+  void onWrite(BLECharacteristic* pCharacteristic) {
+    std::string value = pCharacteristic->getValue();
+    if (value.find("TEMPO:") == 0) {
+      tempoIntervalo = atol(value.substr(6).c_str()) * 1000;
+      proximoAlvo = millis() + tempoIntervalo;
+      ledIndex = 0;
+      Serial.printf("Tempo recebido: %lu ms\n", tempoIntervalo);
+    } else if (value == "CONFIRMAR") {
+      digitalWrite(ledPins[ledIndex], LOW);
+      ledIndex++;
+      if (ledIndex < numLeds) {
+        proximoAlvo = millis() + tempoIntervalo;
+      } else {
+        Serial.println("Todos os LEDs já foram acionados.");
+      }
+    }
+  }
+};
 
 class MyServerCallbacks : public BLEServerCallbacks {
-  void onConnect(BLEServer* pServer) override {
+  void onConnect(BLEServer* pServer) {
     deviceConnected = true;
-    lastConnectionTime = millis();  // Atualiza o tempo de conexão
-    Serial.println("Dispositivo conectado!");
+    Serial.println("Conectado");
   }
 
-  void onDisconnect(BLEServer* pServer) override {
+  void onDisconnect(BLEServer* pServer) {
     deviceConnected = false;
-    Serial.println("Dispositivo desconectado.");
+    Serial.println("Desconectado");
   }
 };
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("Iniciando anúncio BLE...");
-  
-  BLEDevice::init("ESP32S3_Hello");
-  BLEServer *pServer = BLEDevice::createServer();
+  for (int i = 0; i < numLeds; i++) {
+    pinMode(ledPins[i], OUTPUT);
+    digitalWrite(ledPins[i], LOW);
+  }
+
+  BLEDevice::init("ESP32_MedAlert");
+  BLEServer* pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
-  
-  BLEService *pService = pServer->createService(SERVICE_UUID);
+
+  BLEService* pService = pServer->createService(SERVICE_UUID);
   pCharacteristic = pService->createCharacteristic(
                       CHARACTERISTIC_UUID,
-                      BLECharacteristic::PROPERTY_READ |
-                      BLECharacteristic::PROPERTY_NOTIFY
+                      BLECharacteristic::PROPERTY_WRITE
                     );
-  
-  pCharacteristic->addDescriptor(new BLE2902());
-  pCharacteristic->setValue("Hello World");
-  pService->start();
-  
-  startAdvertising();  // Inicia o anúncio
-}
 
-void startAdvertising() {
-  BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
+  pCharacteristic->setCallbacks(new MyCallbacks());
+  pCharacteristic->addDescriptor(new BLE2902());
+
+  pService->start();
+  BLEAdvertising* pAdvertising = BLEDevice::getAdvertising();
   pAdvertising->addServiceUUID(SERVICE_UUID);
-  pAdvertising->setScanResponse(false);
-  pAdvertising->setMinPreferred(0x06);  // Compatível com Android
-  pAdvertising->setMinPreferred(0x12);  // Compatível com iOS
-  BLEDevice::startAdvertising();
-  Serial.println("Anunciando BLE como 'ESP32S3_Hello'");
+  pAdvertising->start();
+  Serial.println("Aguardando conexão BLE...");
 }
 
 void loop() {
-  // Envia notificações periodicamente após conexão
-  if (deviceConnected) {
-    pCharacteristic->setValue("Hello World");
-    pCharacteristic->notify();
-    delay(2000);
-    
-    lastConnectionTime = millis();  // Atualiza o tempo de conexão
-  }
-
-  // Verifica se o tempo de desconexão foi atingido
-  if (!deviceConnected && (millis() - lastConnectionTime > advertisingTimeout)) {
-    startAdvertising();  // Reinicia o anúncio
+  if (deviceConnected && tempoIntervalo > 0 && ledIndex < numLeds) {
+    if (millis() >= proximoAlvo) {
+      digitalWrite(ledPins[ledIndex], HIGH);
+      Serial.printf("LED %d aceso (pino %d)\n", ledIndex + 1, ledPins[ledIndex]);
+      tempoIntervalo = 0; // pausa até confirmação
+    }
   }
 }

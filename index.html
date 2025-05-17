@@ -1,28 +1,27 @@
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>MedAlert</title>
-	
-  <link rel="stylesheet" type="text/css" href="styles.css" media="screen" />
+    <meta charset="UTF-8">
+    <title>MedAlert - Caixa de Remédios</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- Tela inicial: botão para conectar -->
-<div id="conectarSection" class="active">
-  <h1>Conectar ao ESP32 via Bluetooth</h1>
-  <p id="status">Clique no botão para conectar ao dispositivo Bluetooth.</p>
-  <button id="btnConectar">Conectar</button>
-</div>
+    <h1>MedAlert - Controle de Medicação</h1>
 
-<!-- Tela progCaixa: mostra após conexão -->
-<div id="progCaixa">
-  <h1>Caixa de Remédios Conectada</h1>
-  <p id="statusProg">Conectado ao dispositivo BLE.</p>
-  <div id="dataHora">--/--/---- --:--:--</div>
-  <button id="btnDesconectar" style="margin-top:20px;">Desconectar</button>
-</div>
+    <div id="connectionStatus">Status: Desconectado</div>
 
-<script src="script.js"></script>
+    <div id="setupSection">
+        <label for="tempo">Intervalo entre medicamentos (segundos):</label>
+        <input type="number" id="tempo" min="1" />
+        <button id="enviarTempo">Iniciar</button>
+    </div>
 
+    <div id="acaoSection" style="display:none;">
+        <h2 id="ledStatus">Aguardando próximo horário...</h2>
+        <button id="confirmarBtn">Confirmar que tomei o remédio</button>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
