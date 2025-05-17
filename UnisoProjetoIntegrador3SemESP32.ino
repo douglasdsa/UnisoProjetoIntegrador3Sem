@@ -19,8 +19,9 @@ const int numLeds = sizeof(ledPins) / sizeof(ledPins[0]);
 class MyCallbacks : public BLECharacteristicCallbacks {
   void onWrite(BLECharacteristic* pCharacteristic) {
     std::string value = pCharacteristic->getValue();
-    if (value.find("TEMPO:") == 0) {
-      tempoIntervalo = atol(value.substr(6).c_str()) * 1000;
+    String strValue = String(value.c_str());
+    if (strValue.startsWith("TEMPO:")) {
+      tempoIntervalo = strValue.substring(6).toInt() * 1000;
       proximoAlvo = millis() + tempoIntervalo;
       ledIndex = 0;
       Serial.printf("Tempo recebido: %lu ms\n", tempoIntervalo);
