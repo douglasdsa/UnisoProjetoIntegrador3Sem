@@ -42,7 +42,7 @@ let device;
 
       const server = await device.gatt.connect();
 
-      document.getElementById('statusProg').innerText = `Conectado ao dispositivo BLE: ${device.name}`;
+      document.getElementById('statusProg').innerText = `Conectado ao dispositivo: ${device.name}`;
 
       mostrarTela('progCaixa');
 

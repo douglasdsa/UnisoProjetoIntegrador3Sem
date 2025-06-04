@@ -1,6 +1,53 @@
-body { font-family: Arial; text-align: center; margin-top: 50px; }
+body { 
+    font-family: Arial; text-align: center; margin-top: 10px; font-size: 24px;
+    background: rgb(227, 201, 201);
+}
+#logo-cabecalho {
+    width: 125px;
+}
 #progCaixa, #conectarSection { display: none; }
 #conectarSection.active, #progCaixa.active { display: block; }
     button { font-size: 16px; padding: 10px 20px; }
     #output { margin-top: 20px; font-size: 20px; color: green; }
 #dataHora { font-size: 24px; color: #333; margin-top: 20px; }
+.botaoPrincipal {
+    background-color: red; /* Green */
+    border: none;
+    color: white;
+    padding: 25px 40px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 24px;
+    border-radius: 5%;
+    transition-duration: 0.4s;
+    margin-top: 10px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+.botaoPrincipal:hover {
+  background-color: rgb(217, 50, 50); /* Green */
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+  color: white;
+}
+.botaoSecundario {
+    background-color: red; /* Green */
+    border: none;
+    color: white;
+    padding: 20px 30px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 24px;
+    border-radius: 5%;
+    transition-duration: 0.4s;
+    margin-top: 10px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+.botaoSecundario:hover {
+  background-color: rgb(217, 50, 50); /* Green */
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+  color: white;
+}
+#tempo {
+    font-size: 24px
+}

@@ -5,13 +5,17 @@
   <title>MedAlert</title>
 	
   <link rel="stylesheet" type="text/css" href="styles.css" media="screen" />
+  <link rel = "icon" href = "img/logo.png">
 </head>
 <body>
+  <div>
+    <img src="img/logo.png" alt="Logo" id="logo-cabecalho">
+  </div>
   <!-- Tela inicial: botão para conectar -->
 <div id="conectarSection" class="active">
-  <h1>Conectar ao ESP32 via Bluetooth</h1>
-  <p id="status">Clique no botão para conectar ao dispositivo Bluetooth.</p>
-  <button id="btnConectar">Conectar</button>
+  <h1>Conectar ao MedAlert</h1>
+  <p id="status">Clique no botão abaixo para conectar ao dispositivo via Bluetooth.</p>
+  <button class="botaoPrincipal" id="btnConectar">Conectar</button>
 </div>
 
 <!-- Tela progCaixa: mostra após conexão -->
@@ -19,19 +23,19 @@
   <h1>Caixa de Remédios Conectada</h1>
   <p id="statusProg">Conectado ao dispositivo BLE.</p>
   <div id="dataHora">--/--/---- --:--:--</div>
-  <button id="btnDesconectar" style="margin-top:20px;">Desconectar</button>
+  <button class="botaoSecundario" id="btnDesconectar">Desconectar</button>
 
 <!-- MedAlert - Nova lógica com visibilidade controlada -->
 <hr>
 <div id="medalert">
-    <h2>Agendamento de LEDs (MedAlert)</h2>
+    <h2>Agendamento de medicação</h2>
     <label for="tempo">Intervalo entre medicamentos (em segundos):</label>
     <input type="number" id="tempo" min="1" />
-    <button id="enviarTempo">Iniciar</button>
+    <button class="botaoSecundario" id="enviarTempo">Iniciar</button>
 
     <div id="acaoSection" style="display:none; margin-top:20px;">
         <h3 id="ledStatus">Aguardando próximo horário...</h3>
-        <button id="confirmarBtn">Confirmar que tomei o remédio</button>
+        <button class="botaoSecundario" id="confirmarBtn">Confirmar que tomei o remédio</button>
     </div>
 </div>
 

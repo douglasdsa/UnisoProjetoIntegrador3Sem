@@ -24,6 +24,13 @@ class MyCallbacks : public BLECharacteristicCallbacks {
   Serial.printf("%s\\n", value);
 
   if (value.startsWith("TEMPO:")) {
+      digitalWrite(1, LOW);
+      digitalWrite(39, LOW);
+      digitalWrite(0, LOW);
+      digitalWrite(21, LOW);
+      digitalWrite(4, LOW);
+      digitalWrite(17, LOW);
+      digitalWrite(10, LOW);
     tempoIntervalo = value.substring(6).toInt() * 1000;
     proximoAlvo = millis() + tempoIntervalo;
     ledIndex = 0;
@@ -45,6 +52,8 @@ class MyCallbacks : public BLECharacteristicCallbacks {
 }
 };
 
+unsigned long lastDisconnectTime = 0;  // nova variável
+
 class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) {
     deviceConnected = true;
@@ -53,6 +62,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
 
   void onDisconnect(BLEServer* pServer) {
     deviceConnected = false;
+    lastDisconnectTime = millis();  // salva o momento da desconexão
     Serial.println("Dispositivo desconectado.");
   }
 };
@@ -102,5 +112,12 @@ void loop() {
       Serial.printf("LED %d aceso (pino %d)\n", ledIndex + 1, ledPins[ledIndex]);
       habvoid = false; // aguarda confirmação
     }
+  }
+
+   // Verifica se está desconectado há mais de 10 segundos
+  if (!deviceConnected && (millis() - lastDisconnectTime >= 10000)) {
+    BLEDevice::startAdvertising();
+    Serial.println("Reiniciando anúncio BLE após 10s de desconexão...");
+    lastDisconnectTime = millis(); // reinicia o contador para evitar múltiplas chamadas
   }
 }
